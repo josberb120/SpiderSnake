@@ -109,23 +109,29 @@ internal class GameOverScreen : ThemedScreenBase
 
     protected override void Reflow()
     {
+        // Bloque de contenido centrado verticalmente como un todo (antes el título/puntaje
+        // quedaban fijos arriba mientras los botones se anclaban al fondo real de la ventana,
+        // dejando un hueco enorme en pantallas grandes/maximizadas).
+        const int blockHeight = 514;
+        int top = Math.Max(50, (Height - blockHeight) / 2);
+
         _title.Size = new Size(Width, 60);
-        _title.Location = new Point(0, 60);
+        _title.Location = new Point(0, top);
 
         _scoreLabel.Size = new Size(Width, 36);
-        _scoreLabel.Location = new Point(0, 150);
+        _scoreLabel.Location = new Point(0, top + 90);
 
         _newRecordLabel.Size = new Size(Width, 26);
-        _newRecordLabel.Location = new Point(0, 220);
+        _newRecordLabel.Location = new Point(0, top + 160);
 
-        CenterHorizontally(_nameBox, 260);
-        CenterHorizontally(_saveButton, 300);
+        CenterHorizontally(_nameBox, top + 200);
+        CenterHorizontally(_saveButton, top + 240);
 
         _savedLabel.Size = new Size(Width, 24);
-        _savedLabel.Location = new Point(0, 352);
+        _savedLabel.Location = new Point(0, top + 292);
 
-        CenterHorizontally(_retry, Height - 150);
-        CenterHorizontally(_menu, Height - 90);
+        CenterHorizontally(_retry, top + 410);
+        CenterHorizontally(_menu, top + 470);
     }
 
     public void SetScore(int score)

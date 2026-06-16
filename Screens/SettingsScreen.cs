@@ -65,24 +65,29 @@ internal class SettingsScreen : ThemedScreenBase
 
     protected override void Reflow()
     {
+        // Centra todo el bloque verticalmente; antes el botón "volver" se anclaba al fondo
+        // real de la ventana mientras el resto quedaba fijo arriba (hueco enorme al maximizar).
+        const int blockHeight = 542;
+        int top = Math.Max(46, (Height - blockHeight) / 2);
+
         _title.Size = new Size(Width, 60);
-        _title.Location = new Point(0, 46);
+        _title.Location = new Point(0, top);
 
         _difficultyLabel.Size = new Size(Width, 24);
-        _difficultyLabel.Location = new Point(0, 146);
+        _difficultyLabel.Location = new Point(0, top + 100);
 
         int totalWidth = DifficultyButtonWidth * 3 + DifficultyButtonGap * 2;
         int startX = (Width - totalWidth) / 2;
         for (int i = 0; i < _difficultyButtons.Count; i++)
         {
-            _difficultyButtons[i].Button.Location = new Point(startX + i * (DifficultyButtonWidth + DifficultyButtonGap), 186);
+            _difficultyButtons[i].Button.Location = new Point(startX + i * (DifficultyButtonWidth + DifficultyButtonGap), top + 140);
         }
 
         _soundLabel.Size = new Size(Width, 24);
-        _soundLabel.Location = new Point(0, 276);
+        _soundLabel.Location = new Point(0, top + 230);
 
-        CenterHorizontally(_soundButton, 316);
-        CenterHorizontally(_back, Height - 78);
+        CenterHorizontally(_soundButton, top + 270);
+        CenterHorizontally(_back, top + 496);
     }
 
     private static Label MakeSectionLabel(string text) => new()

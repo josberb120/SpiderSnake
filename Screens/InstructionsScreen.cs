@@ -57,11 +57,16 @@ internal class InstructionsScreen : ThemedScreenBase
 
     protected override void Reflow()
     {
-        _title.Size = new Size(Width, 56);
-        _title.Location = new Point(0, 32);
+        // Centra título + tarjeta + botón como un solo bloque (antes el botón se anclaba al
+        // fondo real de la ventana mientras la tarjeta quedaba fija arriba).
+        const int blockHeight = 556;
+        int top = Math.Max(32, (Height - blockHeight) / 2);
 
-        _card.Location = new Point((Width - _card.Width) / 2, 104);
-        CenterHorizontally(_back, Height - 78);
+        _title.Size = new Size(Width, 56);
+        _title.Location = new Point(0, top);
+
+        _card.Location = new Point((Width - _card.Width) / 2, top + 72);
+        CenterHorizontally(_back, top + 510);
     }
 
     private void AddLine(string text, bool isHeader, int top)

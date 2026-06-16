@@ -43,11 +43,16 @@ internal class HighScoresScreen : ThemedScreenBase
 
     protected override void Reflow()
     {
-        _title.Size = new Size(Width, 50);
-        _title.Location = new Point(0, 36);
+        // Centra todo el bloque (título + lista + volver) según el alto disponible en vez de
+        // fijar la lista arriba y el botón pegado al fondo real de la ventana.
+        const int blockHeight = 552;
+        int top = Math.Max(36, (Height - blockHeight) / 2);
 
-        _listPanel.Location = new Point((Width - _listPanel.Width) / 2, 110);
-        CenterHorizontally(_back, Height - 78);
+        _title.Size = new Size(Width, 50);
+        _title.Location = new Point(0, top);
+
+        _listPanel.Location = new Point((Width - _listPanel.Width) / 2, top + 74);
+        CenterHorizontally(_back, top + 506);
     }
 
     public void RefreshScores()
