@@ -18,21 +18,39 @@ internal class GameScreen : UserControl
     private const int GridHeight = AppLayout.GridHeight;
     private const int TopBarHeight = AppLayout.TopBarHeight;
     private const int MinCellSize = 12;
-    private const int MaxCellSize = 32;
+    private const int MaxCellSize = 44;
 
     public event Action<int>? GameEnded;
     public event Action? BackToMenuRequested;
 
+    private const double PopupLifeMs = 850;
+    private const double MilestoneDurationMs = 1300;
+    private const int MilestoneStep = 100;
+
     private readonly GameEngine _engine = new(GridWidth, GridHeight);
     private readonly GameSettings _settings;
     private readonly System.Windows.Forms.Timer _timer = new();
+    private readonly System.Windows.Forms.Timer _fxTimer = new() { Interval = 33 };
     private readonly GameCanvas _canvas = new();
     private readonly Label _scoreLabel;
     private readonly Label _bestLabel;
+    private readonly Label _streakLabel;
     private readonly SpideyButton _pauseButton;
     private readonly PauseOverlay _pauseOverlay;
+    private readonly List<ScorePopup> _popups = new();
     private bool _isPaused;
     private bool _started;
+    private int _lastMilestoneReached;
+    private string? _milestoneText;
+    private double _milestoneAgeMs;
+
+    private class ScorePopup
+    {
+        public required PointF Position;
+        public required string Text;
+        public required Color Color;
+        public double AgeMs;
+    }
 
     public GameScreen(GameSettings settings)
     {
@@ -66,6 +84,15 @@ internal class GameScreen : UserControl
             Location = new Point(20, 38),
             BackColor = Color.Transparent,
         };
+        _streakLabel = new Label
+        {
+            Text = "",
+            Font = SpideyTheme.BodyFont(13f, FontStyle.Bold),
+            ForeColor = SpideyTheme.GoldAccent,
+            AutoSize = true,
+            Visible = false,
+            BackColor = Color.Transparent,
+        };
         _pauseButton = new SpideyButton
         {
             Text = "‖ PAUSA",
@@ -78,9 +105,15 @@ internal class GameScreen : UserControl
 
         topBar.Controls.Add(_scoreLabel);
         topBar.Controls.Add(_bestLabel);
+        topBar.Controls.Add(_streakLabel);
         topBar.Controls.Add(_pauseButton);
-        topBar.Resize += (_, _) => _pauseButton.Location = new Point(topBar.Width - _pauseButton.Width - 16, 11);
-        _pauseButton.Location = new Point(topBar.Width - _pauseButton.Width - 16, 11);
+        void ReflowTopBar()
+        {
+            _pauseButton.Location = new Point(topBar.Width - _pauseButton.Width - 16, 11);
+            _streakLabel.Location = new Point((topBar.Width - _streakLabel.Width) / 2, 12);
+        }
+        topBar.Resize += (_, _) => ReflowTopBar();
+        ReflowTopBar();
 
         _canvas.Dock = DockStyle.Fill;
         _canvas.PaintCallback = PaintGame;
@@ -101,6 +134,7 @@ internal class GameScreen : UserControl
         _pauseOverlay.BringToFront();
 
         _timer.Tick += (_, _) => OnTick();
+        _fxTimer.Tick += (_, _) => OnFxTick();
     }
 
     public void StartNewGame()
@@ -111,13 +145,22 @@ internal class GameScreen : UserControl
         _started = true;
         _scoreLabel.Text = "PUNTOS: 0";
         _bestLabel.Text = $"MEJOR: {Services.HighScoreService.BestScore()}";
+        _streakLabel.Visible = false;
+        _popups.Clear();
+        _milestoneText = null;
+        _lastMilestoneReached = 0;
         _timer.Interval = _settings.StartingIntervalMs;
         _timer.Start();
+        _fxTimer.Start();
         _canvas.Invalidate();
         Focus();
     }
 
-    public void StopGame() => _timer.Stop();
+    public void StopGame()
+    {
+        _timer.Stop();
+        _fxTimer.Stop();
+    }
 
     private void TogglePause()
     {
@@ -127,11 +170,13 @@ internal class GameScreen : UserControl
         if (_isPaused)
         {
             _timer.Stop();
+            _fxTimer.Stop();
             _pauseOverlay.BringToFront();
         }
         else
         {
             _timer.Start();
+            _fxTimer.Start();
             Focus();
         }
     }
@@ -142,23 +187,85 @@ internal class GameScreen : UserControl
         switch (result)
         {
             case TickResult.AteSpider:
-                _scoreLabel.Text = $"PUNTOS: {_engine.Score}";
-                if (_settings.SoundEnabled) SystemSounds.Asterisk.Play();
-                _timer.Interval = _engine.CurrentIntervalMs(_settings.StartingIntervalMs, _settings.MinIntervalMs);
-                break;
             case TickResult.AteGoldenSpider:
+                bool golden = result == TickResult.AteGoldenSpider;
                 _scoreLabel.Text = $"PUNTOS: {_engine.Score}";
-                if (_settings.SoundEnabled) SystemSounds.Exclamation.Play();
+                if (_settings.SoundEnabled) (golden ? SystemSounds.Exclamation : SystemSounds.Asterisk).Play();
                 _timer.Interval = _engine.CurrentIntervalMs(_settings.StartingIntervalMs, _settings.MinIntervalMs);
+                SpawnScorePopup(golden);
+                UpdateStreakLabel();
+                CheckMilestone();
                 break;
             case TickResult.GameOver:
                 _timer.Stop();
+                _fxTimer.Stop();
                 _started = false;
                 if (_settings.SoundEnabled) SystemSounds.Hand.Play();
                 GameEnded?.Invoke(_engine.Score);
                 return;
         }
         _canvas.Invalidate();
+    }
+
+    private void SpawnScorePopup(bool golden)
+    {
+        var (cellSize, offsetX, offsetY) = ComputeGridMetrics();
+        var cell = _engine.Snake[0]; // la cabeza acaba de entrar a la celda donde estaba la araña comida
+        var center = new PointF(
+            offsetX + cell.X * cellSize + cellSize / 2f,
+            offsetY + cell.Y * cellSize + cellSize / 2f);
+
+        string text = $"+{_engine.LastPointsAwarded}";
+        if (golden) text += " ¡DORADA!";
+        else if (_engine.LastComboBonus > 0) text += $" RACHA x{_engine.Streak}";
+
+        _popups.Add(new ScorePopup
+        {
+            Position = center,
+            Text = text,
+            Color = golden ? SpideyTheme.GoldAccent : Color.White,
+        });
+    }
+
+    private void UpdateStreakLabel()
+    {
+        _streakLabel.Visible = _engine.Streak >= 3;
+        if (!_streakLabel.Visible) return;
+
+        _streakLabel.Text = $"⚡ RACHA x{_engine.Streak}";
+        var parent = _streakLabel.Parent!;
+        _streakLabel.Location = new Point((parent.Width - _streakLabel.Width) / 2, 12);
+    }
+
+    private void CheckMilestone()
+    {
+        int reached = (_engine.Score / MilestoneStep) * MilestoneStep;
+        if (reached > _lastMilestoneReached && reached > 0)
+        {
+            _lastMilestoneReached = reached;
+            _milestoneText = $"¡{reached} PUNTOS, TREPAMUROS!";
+            _milestoneAgeMs = 0;
+        }
+    }
+
+    private void OnFxTick()
+    {
+        bool any = false;
+        for (int i = _popups.Count - 1; i >= 0; i--)
+        {
+            _popups[i].AgeMs += _fxTimer.Interval;
+            if (_popups[i].AgeMs >= PopupLifeMs) _popups.RemoveAt(i);
+            else any = true;
+        }
+
+        if (_milestoneText != null)
+        {
+            _milestoneAgeMs += _fxTimer.Interval;
+            if (_milestoneAgeMs >= MilestoneDurationMs) _milestoneText = null;
+            else any = true;
+        }
+
+        if (any) _canvas.Invalidate();
     }
 
     protected override bool IsInputKey(Keys keyData) =>
@@ -218,7 +325,22 @@ internal class GameScreen : UserControl
     private void PaintGame(Graphics g)
     {
         g.SmoothingMode = SmoothingMode.AntiAlias;
+
+        // Fondo temático (degradado + telaraña) que llena todo el canvas, incluso el
+        // espacio "muerto" alrededor del tablero en pantallas grandes/maximizadas.
+        SpideyTheme.PaintBackdrop(g, _canvas.ClientRectangle, SpideyTheme.SpideyBlue, SpideyTheme.SpideyBlueDark);
+
         var (cellSize, offsetX, offsetY) = ComputeGridMetrics();
+
+        // Marco tipo "tarjeta" de cómic alrededor del tablero jugable.
+        var frameRect = new Rectangle(offsetX - 10, offsetY - 10, GridWidth * cellSize + 20, GridHeight * cellSize + 20);
+        using (var framePath = RoundedRect(frameRect, 16))
+        {
+            using var frameFill = new SolidBrush(Color.FromArgb(150, 10, 8, 12));
+            g.FillPath(frameFill, framePath);
+            using var framePen = new Pen(SpideyTheme.GoldAccent, 2f);
+            g.DrawPath(framePen, framePath);
+        }
 
         using var gridPen = new Pen(Color.FromArgb(18, 255, 255, 255), 1f);
         for (int x = 0; x <= GridWidth; x++)
@@ -259,6 +381,54 @@ internal class GameScreen : UserControl
                 g.FillEllipse(eyeBrush, rect.Right - eyeSize - 2, rect.Top + 2, eyeSize, eyeSize);
             }
         }
+
+        PaintScorePopups(g);
+        PaintMilestoneBanner(g);
+    }
+
+    /// <summary>"+10"/"+30 ¡DORADA!" flotantes que suben y se desvanecen donde se comió la araña.</summary>
+    private void PaintScorePopups(Graphics g)
+    {
+        using var font = SpideyTheme.BodyFont(13f, FontStyle.Bold);
+        foreach (var popup in _popups)
+        {
+            double t = Math.Clamp(popup.AgeMs / PopupLifeMs, 0, 1);
+            int alpha = (int)(255 * (1 - t));
+            float riseY = (float)(t * 38);
+
+            var pos = new PointF(popup.Position.X, popup.Position.Y - riseY - 14);
+            using var brush = new SolidBrush(Color.FromArgb(alpha, popup.Color));
+            using var shadowBrush = new SolidBrush(Color.FromArgb(alpha / 2, 0, 0, 0));
+            using var sf = new StringFormat { Alignment = StringAlignment.Center };
+            g.DrawString(popup.Text, font, shadowBrush, pos.X + 1, pos.Y + 1, sf);
+            g.DrawString(popup.Text, font, brush, pos.X, pos.Y, sf);
+        }
+    }
+
+    /// <summary>Banner grande que celebra cada 100 puntos alcanzados, estilo viñeta de cómic.</summary>
+    private void PaintMilestoneBanner(Graphics g)
+    {
+        if (_milestoneText == null) return;
+
+        double t = Math.Clamp(_milestoneAgeMs / MilestoneDurationMs, 0, 1);
+        double fade = t < 0.15 ? t / 0.15 : t > 0.75 ? (1 - t) / 0.25 : 1;
+        int alpha = (int)(220 * Math.Clamp(fade, 0, 1));
+        if (alpha <= 0) return;
+
+        using var font = SpideyTheme.TitleFont(22f);
+        var size = g.MeasureString(_milestoneText, font);
+        var bounds = _canvas.ClientRectangle;
+        var bannerRect = new RectangleF((bounds.Width - size.Width) / 2 - 24, bounds.Height * 0.18f - 14, size.Width + 48, size.Height + 28);
+
+        using var path = RoundedRect(Rectangle.Round(bannerRect), 18);
+        using var fill = new SolidBrush(Color.FromArgb(alpha * 150 / 220, 10, 8, 12));
+        g.FillPath(fill, path);
+        using var border = new Pen(Color.FromArgb(alpha, SpideyTheme.GoldAccent), 2.5f);
+        g.DrawPath(border, path);
+
+        using var textBrush = new SolidBrush(Color.FromArgb(alpha, SpideyTheme.GoldAccent));
+        using var sf = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
+        g.DrawString(_milestoneText, font, textBrush, bannerRect, sf);
     }
 
     private static GraphicsPath RoundedRect(Rectangle r, int radius)

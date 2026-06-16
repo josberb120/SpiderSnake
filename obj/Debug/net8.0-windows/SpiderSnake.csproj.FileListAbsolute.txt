@@ -26,3 +26,4 @@ C:\Users\betan\Downloads\spider-snake\SpiderSnake\obj\Debug\net8.0-windows\refin
 C:\Users\betan\Downloads\spider-snake\SpiderSnake\obj\Debug\net8.0-windows\SpiderSnake.pdb
 C:\Users\betan\Downloads\spider-snake\SpiderSnake\obj\Debug\net8.0-windows\SpiderSnake.genruntimeconfig.cache
 C:\Users\betan\Downloads\spider-snake\SpiderSnake\obj\Debug\net8.0-windows\ref\SpiderSnake.dll
+C:\Users\betan\Downloads\spider-snake\SpiderSnake\obj\Debug\net8.0-windows\SpiderSnake.sourcelink.json

@@ -2,7 +2,34 @@
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup />
   <ItemGroup>
+    <Compile Update="Controls\PauseOverlay.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Controls\ThemedScreenBase.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Game\GameScreen.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="MainForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Screens\GameOverScreen.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Screens\HighScoresScreen.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Screens\InstructionsScreen.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Update="Screens\MainMenuScreen.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Screens\SettingsScreen.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Screens\SplashScreen.cs">
       <SubType>UserControl</SubType>
     </Compile>
   </ItemGroup>

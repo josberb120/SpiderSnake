@@ -97,12 +97,20 @@ internal static class SpideyTheme
         }
     }
 
-    /// <summary>Dibuja una pequeña araña (cuerpo + 8 patas) centrada en <paramref name="center"/>.</summary>
+    /// <summary>Dibuja una pequeña araña (cuerpo + 8 patas) centrada en <paramref name="center"/>.
+    /// Las normales usan un cuerpo rojo "viuda negra" con patas claras para que
+    /// siempre destaquen sobre el fondo oscuro del tablero (antes eran casi
+    /// invisibles: cuerpo casi-negro sobre fondo casi-negro).</summary>
     public static void PaintSpider(Graphics g, Point center, int size, bool golden = false)
     {
         g.SmoothingMode = SmoothingMode.AntiAlias;
-        Color body = golden ? GoldAccent : Color.FromArgb(25, 22, 26);
-        Color legs = golden ? Color.FromArgb(200, 150, 10) : Color.FromArgb(15, 13, 16);
+        Color body = golden ? GoldAccent : SpideyRed;
+        Color legs = golden ? Color.FromArgb(200, 150, 10) : Color.FromArgb(225, 225, 230);
+        Color glowColor = golden ? GoldAccent : SpideyRed;
+
+        // Halo sutil para que la araña resalte siempre sobre el tablero, sea cual sea el fondo.
+        using var glowPen = new Pen(Color.FromArgb(golden ? 130 : 90, glowColor), golden ? 2f : 1.6f);
+        g.DrawEllipse(glowPen, center.X - size, center.Y - size, size * 2, size * 2);
 
         using var legPen = new Pen(legs, Math.Max(1.5f, size / 9f));
         int legSpan = size;
@@ -120,12 +128,21 @@ internal static class SpideyTheme
         int headSize = size / 2;
         g.FillEllipse(bodyBrush, center.X - headSize / 2, center.Y - size * 2 / 5, headSize, headSize);
         int abdomenSize = (int)(size * 0.8);
-        g.FillEllipse(bodyBrush, center.X - abdomenSize / 2, center.Y - abdomenSize / 4, abdomenSize, abdomenSize);
+        var abdomenRect = new Rectangle(center.X - abdomenSize / 2, center.Y - abdomenSize / 4, abdomenSize, abdomenSize);
+        g.FillEllipse(bodyBrush, abdomenRect);
 
-        if (golden)
-        {
-            using var glowPen = new Pen(Color.FromArgb(120, GoldAccent), 2f);
-            g.DrawEllipse(glowPen, center.X - size, center.Y - size, size * 2, size * 2);
-        }
+        // Marca de telaraña en el abdomen (estilo viuda negra / traje arácnido) para dar detalle temático.
+        Color markColor = golden ? Color.FromArgb(160, 120, 30, 0) : Color.FromArgb(200, 10, 8, 12);
+        using var markPen = new Pen(markColor, Math.Max(1f, size / 14f));
+        int mw = abdomenSize / 3;
+        g.DrawLine(markPen, center.X, abdomenRect.Top + abdomenSize / 6, center.X, abdomenRect.Bottom - abdomenSize / 6);
+        g.DrawLine(markPen, center.X - mw / 2, abdomenRect.Top + abdomenSize / 3, center.X + mw / 2, abdomenRect.Top + abdomenSize / 3);
+        g.DrawLine(markPen, center.X - mw / 2, abdomenRect.Bottom - abdomenSize / 3, center.X + mw / 2, abdomenRect.Bottom - abdomenSize / 3);
+
+        // Ojitos blancos brillantes en la cabeza, igual de visibles que los del propio Spider-Man.
+        int eyeSize = Math.Max(2, size / 8);
+        using var eyeBrush = new SolidBrush(Color.White);
+        g.FillEllipse(eyeBrush, center.X - eyeSize - 1, center.Y - size * 2 / 5 + headSize / 4, eyeSize, eyeSize);
+        g.FillEllipse(eyeBrush, center.X + 1, center.Y - size * 2 / 5 + headSize / 4, eyeSize, eyeSize);
     }
 }

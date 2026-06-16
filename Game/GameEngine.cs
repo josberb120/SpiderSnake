@@ -13,6 +13,8 @@ internal class GameEngine
 {
     public const int GoldenSpiderEveryNFoods = 5;
     private const int GoldenSpiderLifeTicks = 35; // se "escapa" si no se come a tiempo
+    private const int ComboWindowTicks = 15; // ventana para mantener/subir la racha
+    private const int MaxComboLevel = 5;
 
     public int GridWidth { get; }
     public int GridHeight { get; }
@@ -23,11 +25,21 @@ internal class GameEngine
     public int Score { get; private set; }
     public bool IsGameOver { get; private set; }
 
+    /// <summary>Racha actual de arañas comidas seguidas sin pausarse demasiado entre una y otra.</summary>
+    public int Streak { get; private set; }
+
+    /// <summary>Puntos exactos otorgados (base + bono de racha) en la última araña comida.</summary>
+    public int LastPointsAwarded { get; private set; }
+
+    /// <summary>Bono extra (sólo el de racha, sin contar la base) otorgado en la última captura.</summary>
+    public int LastComboBonus { get; private set; }
+
     private Direction _direction = Direction.Right;
     private Direction _pendingDirection = Direction.Right;
     private readonly Random _rng = new();
     private int _spidersEaten;
     private int _goldenSpiderTicksLeft;
+    private int _ticksSinceLastEat = int.MaxValue;
 
     public GameEngine(int gridWidth, int gridHeight)
     {
@@ -50,6 +62,8 @@ internal class GameEngine
         _pendingDirection = Direction.Right;
         Score = 0;
         _spidersEaten = 0;
+        Streak = 0;
+        _ticksSinceLastEat = int.MaxValue;
         IsGameOver = false;
         SpawnSpider();
     }
@@ -100,7 +114,17 @@ internal class GameEngine
         if (ateFood)
         {
             bool wasGolden = IsGoldenSpider;
-            Score += wasGolden ? 30 : 10;
+            int baseValue = wasGolden ? 30 : 10;
+
+            Streak = _ticksSinceLastEat <= ComboWindowTicks ? Streak + 1 : 1;
+            _ticksSinceLastEat = 0;
+
+            int comboLevel = Math.Min(Streak - 1, MaxComboLevel);
+            int comboBonus = comboLevel * 2;
+            LastComboBonus = comboBonus;
+            LastPointsAwarded = baseValue + comboBonus;
+
+            Score += LastPointsAwarded;
             _spidersEaten++;
             result = wasGolden ? TickResult.AteGoldenSpider : TickResult.AteSpider;
             SpawnSpider();
@@ -108,10 +132,12 @@ internal class GameEngine
         else
         {
             Snake.RemoveAt(Snake.Count - 1);
+            if (_ticksSinceLastEat < int.MaxValue) _ticksSinceLastEat++;
 
             if (IsGoldenSpider && --_goldenSpiderTicksLeft <= 0)
             {
                 IsGoldenSpider = false; // la araña dorada se escapa: vuelve a una normal
+                Streak = 0; // dejarla escapar rompe la racha
                 SpawnSpider(forceNormal: true);
             }
         }
