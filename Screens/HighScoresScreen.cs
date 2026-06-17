@@ -66,10 +66,11 @@ internal class HighScoresScreen : ThemedScreenBase
                 Font = SpideyTheme.BodyFont(11f, FontStyle.Italic),
                 ForeColor = Color.White,
                 AutoSize = false,
+                UseCompatibleTextRendering = true,
                 TextAlign = ContentAlignment.MiddleCenter,
                 BackColor = Color.Transparent,
                 Location = new Point(20, 20),
-                Size = new Size(_listPanel.Width - 40, 46),
+                Size = new Size(_listPanel.Width - 40, 50),
             });
             return;
         }
@@ -84,9 +85,11 @@ internal class HighScoresScreen : ThemedScreenBase
                 Font = SpideyTheme.BodyFont(top3 ? 13f : 11.5f, top3 ? FontStyle.Bold : FontStyle.Regular),
                 ForeColor = top3 ? SpideyTheme.GoldAccent : Color.White,
                 AutoSize = false,
+                UseCompatibleTextRendering = true,
+                TextAlign = ContentAlignment.MiddleLeft,
                 BackColor = Color.Transparent,
-                Location = new Point(30, 16 + i * 35),
-                Size = new Size(_listPanel.Width - 60, 34),
+                Location = new Point(30, 16 + i * 37),
+                Size = new Size(_listPanel.Width - 60, 36),
             };
             _listPanel.Controls.Add(row);
         }

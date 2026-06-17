@@ -73,7 +73,9 @@ internal class GameScreen : UserControl
             Font = SpideyTheme.TitleFont(16f),
             ForeColor = Color.White,
             AutoSize = true,
-            Location = new Point(16, 8),
+            UseCompatibleTextRendering = true,
+            Padding = new Padding(0, 2, 0, 3),
+            Location = new Point(16, 6),
             BackColor = Color.Transparent,
         };
         _bestLabel = new Label
@@ -82,6 +84,8 @@ internal class GameScreen : UserControl
             Font = SpideyTheme.BodyFont(11f, FontStyle.Bold),
             ForeColor = SpideyTheme.GoldAccent,
             AutoSize = true,
+            UseCompatibleTextRendering = true,
+            Padding = new Padding(0, 1, 0, 2),
             BackColor = Color.Transparent,
         };
         // Bajo el puntaje, en vez de un offset fijo: así nunca se solapan ni se cortan
@@ -93,6 +97,8 @@ internal class GameScreen : UserControl
             Font = SpideyTheme.BodyFont(13f, FontStyle.Bold),
             ForeColor = SpideyTheme.GoldAccent,
             AutoSize = true,
+            UseCompatibleTextRendering = true,
+            Padding = new Padding(0, 1, 0, 2),
             Visible = false,
             BackColor = Color.Transparent,
         };

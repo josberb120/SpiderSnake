@@ -56,13 +56,19 @@ internal class ThemedScreenBase : UserControl
             Font = SpideyTheme.TitleFont(size),
             ForeColor = color,
             AutoSize = true,
+            // GDI (el renderizador de texto por defecto desde .NET 2.0) calcula el alto a partir
+            // de métricas genéricas que para una fuente decorativa como "Impact" se quedan
+            // cortas y rebanan astas/colas por el medio. GDI+ (compatible) mide con las métricas
+            // reales de la fuente, así el cuadro AutoSize siempre alcanza para la letra completa.
+            UseCompatibleTextRendering = true,
+            Padding = new Padding(0, 4, 0, 6),
             BackColor = Color.Transparent,
         };
     }
 
     /// <summary>
     /// Etiqueta de texto normal (subtítulos, pies, mensajes). Igual que <see cref="MakeTitle"/>,
-    /// usa AutoSize para que nunca se corte el texto sin importar fuente/DPI del sistema.
+    /// usa AutoSize + renderizado GDI+ para que nunca se corte el texto sin importar fuente/DPI.
     /// </summary>
     protected static Label MakeLabel(string text, float size, Color color, FontStyle style = FontStyle.Regular)
     {
@@ -72,6 +78,8 @@ internal class ThemedScreenBase : UserControl
             Font = SpideyTheme.BodyFont(size, style),
             ForeColor = color,
             AutoSize = true,
+            UseCompatibleTextRendering = true,
+            Padding = new Padding(0, 2, 0, 3),
             BackColor = Color.Transparent,
         };
     }

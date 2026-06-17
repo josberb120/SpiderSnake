@@ -27,6 +27,8 @@ internal class PauseOverlay : UserControl
             Font = SpideyTheme.TitleFont(30f),
             ForeColor = SpideyTheme.GoldAccent,
             AutoSize = true,
+            UseCompatibleTextRendering = true,
+            Padding = new Padding(0, 4, 0, 6),
             BackColor = Color.Transparent,
         };
 

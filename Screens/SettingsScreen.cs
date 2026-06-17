@@ -91,6 +91,8 @@ internal class SettingsScreen : ThemedScreenBase
         Font = SpideyTheme.BodyFont(13f, FontStyle.Bold),
         ForeColor = SpideyTheme.GoldAccent,
         AutoSize = true,
+        UseCompatibleTextRendering = true,
+        Padding = new Padding(0, 1, 0, 2),
         BackColor = Color.Transparent,
     };
 

@@ -75,9 +75,11 @@ internal class InstructionsScreen : ThemedScreenBase
             Font = isHeader ? SpideyTheme.BodyFont(13f, FontStyle.Bold) : SpideyTheme.BodyFont(11f),
             ForeColor = isHeader ? SpideyTheme.GoldAccent : Color.White,
             AutoSize = false,
+            UseCompatibleTextRendering = true,
+            TextAlign = ContentAlignment.MiddleLeft,
             BackColor = Color.Transparent,
             Location = new Point(24, top),
-            Size = new Size(CardWidth - 48, 27),
+            Size = new Size(CardWidth - 48, 28),
         };
         _card.Controls.Add(label);
     }
