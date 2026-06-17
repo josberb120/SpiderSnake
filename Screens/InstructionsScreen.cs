@@ -62,9 +62,7 @@ internal class InstructionsScreen : ThemedScreenBase
         const int blockHeight = 556;
         int top = Math.Max(32, (Height - blockHeight) / 2);
 
-        _title.Size = new Size(Width, 56);
-        _title.Location = new Point(0, top);
-
+        CenterHorizontally(_title, top);
         _card.Location = new Point((Width - _card.Width) / 2, top + 72);
         CenterHorizontally(_back, top + 510);
     }
@@ -79,7 +77,7 @@ internal class InstructionsScreen : ThemedScreenBase
             AutoSize = false,
             BackColor = Color.Transparent,
             Location = new Point(24, top),
-            Size = new Size(CardWidth - 48, 24),
+            Size = new Size(CardWidth - 48, 27),
         };
         _card.Controls.Add(label);
     }

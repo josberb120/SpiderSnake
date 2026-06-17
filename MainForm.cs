@@ -28,6 +28,12 @@ internal class MainForm : Form
 
     public MainForm()
     {
+        // Todas las pantallas recalculan su propio layout en Reflow() según el tamaño real
+        // (responsive a mano). El autoescalado de WinForms basado en fuente/DPI duplicaría ese
+        // ajuste y es la causa más probable de texto cortado en equipos con escalado de pantalla
+        // distinto al 100%: desactivarlo deja el control total del tamaño en nuestro código.
+        AutoScaleMode = AutoScaleMode.None;
+
         Text = "Spider-Snake — el trepamuros hambriento";
         ClientSize = new Size(AppLayout.ScreenWidth, AppLayout.ScreenHeight);
         MinimumSize = new Size(AppLayout.ScreenWidth, AppLayout.ScreenHeight) + (Size - ClientSize);

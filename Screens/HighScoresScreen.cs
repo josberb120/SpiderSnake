@@ -48,9 +48,7 @@ internal class HighScoresScreen : ThemedScreenBase
         const int blockHeight = 552;
         int top = Math.Max(36, (Height - blockHeight) / 2);
 
-        _title.Size = new Size(Width, 50);
-        _title.Location = new Point(0, top);
-
+        CenterHorizontally(_title, top);
         _listPanel.Location = new Point((Width - _listPanel.Width) / 2, top + 74);
         CenterHorizontally(_back, top + 506);
     }
@@ -71,7 +69,7 @@ internal class HighScoresScreen : ThemedScreenBase
                 TextAlign = ContentAlignment.MiddleCenter,
                 BackColor = Color.Transparent,
                 Location = new Point(20, 20),
-                Size = new Size(_listPanel.Width - 40, 40),
+                Size = new Size(_listPanel.Width - 40, 46),
             });
             return;
         }
@@ -88,7 +86,7 @@ internal class HighScoresScreen : ThemedScreenBase
                 AutoSize = false,
                 BackColor = Color.Transparent,
                 Location = new Point(30, 16 + i * 35),
-                Size = new Size(_listPanel.Width - 60, 30),
+                Size = new Size(_listPanel.Width - 60, 34),
             };
             _listPanel.Controls.Add(row);
         }

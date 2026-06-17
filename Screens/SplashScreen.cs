@@ -27,24 +27,8 @@ internal class SplashScreen : ThemedScreenBase
         AccentDark = SpideyTheme.NearBlack;
 
         _title = MakeTitle("SPIDER-SNAKE", 58f, Color.White);
-        _subtitle = new Label
-        {
-            Text = "tu vecino arácnido tiene hambre de telaraña",
-            Font = SpideyTheme.BodyFont(12f, FontStyle.Italic),
-            ForeColor = SpideyTheme.GoldAccent,
-            AutoSize = false,
-            TextAlign = ContentAlignment.MiddleCenter,
-            BackColor = Color.Transparent,
-        };
-        _hint = new Label
-        {
-            Text = "haz clic para continuar",
-            Font = SpideyTheme.BodyFont(9f),
-            ForeColor = Color.FromArgb(170, 255, 255, 255),
-            AutoSize = false,
-            TextAlign = ContentAlignment.MiddleCenter,
-            BackColor = Color.Transparent,
-        };
+        _subtitle = MakeLabel("tu vecino arácnido tiene hambre de telaraña", 12f, SpideyTheme.GoldAccent, FontStyle.Italic);
+        _hint = MakeLabel("haz clic para continuar", 9f, Color.FromArgb(170, 255, 255, 255));
 
         Controls.Add(_title);
         Controls.Add(_subtitle);
@@ -65,14 +49,9 @@ internal class SplashScreen : ThemedScreenBase
 
     protected override void Reflow()
     {
-        _title.Size = new Size(Width, 90);
-        _title.Location = new Point(0, Height / 2 - 150);
-
-        _subtitle.Size = new Size(Width, 30);
-        _subtitle.Location = new Point(0, Height / 2 - 50);
-
-        _hint.Size = new Size(Width, 24);
-        _hint.Location = new Point(0, Height - 60);
+        CenterHorizontally(_title, Height / 2 - 150);
+        CenterHorizontally(_subtitle, Height / 2 - 50);
+        CenterHorizontally(_hint, Height - 60);
 
         _webCenter = new Point(Width / 2, Height / 2 - 220);
         _barRect = new Rectangle(Width / 2 - 150, Height - 100, 300, 14);

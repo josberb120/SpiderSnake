@@ -70,11 +70,8 @@ internal class SettingsScreen : ThemedScreenBase
         const int blockHeight = 542;
         int top = Math.Max(46, (Height - blockHeight) / 2);
 
-        _title.Size = new Size(Width, 60);
-        _title.Location = new Point(0, top);
-
-        _difficultyLabel.Size = new Size(Width, 24);
-        _difficultyLabel.Location = new Point(0, top + 100);
+        CenterHorizontally(_title, top);
+        CenterHorizontally(_difficultyLabel, top + 100);
 
         int totalWidth = DifficultyButtonWidth * 3 + DifficultyButtonGap * 2;
         int startX = (Width - totalWidth) / 2;
@@ -83,9 +80,7 @@ internal class SettingsScreen : ThemedScreenBase
             _difficultyButtons[i].Button.Location = new Point(startX + i * (DifficultyButtonWidth + DifficultyButtonGap), top + 140);
         }
 
-        _soundLabel.Size = new Size(Width, 24);
-        _soundLabel.Location = new Point(0, top + 230);
-
+        CenterHorizontally(_soundLabel, top + 230);
         CenterHorizontally(_soundButton, top + 270);
         CenterHorizontally(_back, top + 496);
     }
@@ -95,8 +90,7 @@ internal class SettingsScreen : ThemedScreenBase
         Text = text,
         Font = SpideyTheme.BodyFont(13f, FontStyle.Bold),
         ForeColor = SpideyTheme.GoldAccent,
-        AutoSize = false,
-        TextAlign = ContentAlignment.MiddleCenter,
+        AutoSize = true,
         BackColor = Color.Transparent,
     };
 

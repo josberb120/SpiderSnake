@@ -41,7 +41,13 @@ internal class ThemedScreenBase : UserControl
         base.OnPaint(e);
     }
 
-    /// <summary>Etiqueta de título grande, estilo cómic. El tamaño se fija en <see cref="Reflow"/>.</summary>
+    /// <summary>
+    /// Etiqueta de título grande, estilo cómic. Usa <c>AutoSize</c> a propósito: con una caja de
+    /// alto fijo en píxeles, el texto se corta en cuanto la fuente "Impact" no está instalada
+    /// (Windows la sustituye por otra con métricas distintas) o el sistema tiene un escalado de
+    /// pantalla distinto al 100%. Con AutoSize, WinForms mide el texto real en tiempo de
+    /// ejecución y la caja siempre es del tamaño exacto que necesita, sin adivinar números.
+    /// </summary>
     protected static Label MakeTitle(string text, float size, Color color)
     {
         return new Label
@@ -49,8 +55,23 @@ internal class ThemedScreenBase : UserControl
             Text = text,
             Font = SpideyTheme.TitleFont(size),
             ForeColor = color,
-            AutoSize = false,
-            TextAlign = ContentAlignment.MiddleCenter,
+            AutoSize = true,
+            BackColor = Color.Transparent,
+        };
+    }
+
+    /// <summary>
+    /// Etiqueta de texto normal (subtítulos, pies, mensajes). Igual que <see cref="MakeTitle"/>,
+    /// usa AutoSize para que nunca se corte el texto sin importar fuente/DPI del sistema.
+    /// </summary>
+    protected static Label MakeLabel(string text, float size, Color color, FontStyle style = FontStyle.Regular)
+    {
+        return new Label
+        {
+            Text = text,
+            Font = SpideyTheme.BodyFont(size, style),
+            ForeColor = color,
+            AutoSize = true,
             BackColor = Color.Transparent,
         };
     }

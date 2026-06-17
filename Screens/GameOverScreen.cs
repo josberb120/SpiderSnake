@@ -31,25 +31,10 @@ internal class GameOverScreen : ThemedScreenBase
         _title = MakeTitle("¡TE ATRAPARON!", 40f, SpideyTheme.SpideyRed);
         Controls.Add(_title);
 
-        _scoreLabel = new Label
-        {
-            Font = SpideyTheme.BodyFont(20f, FontStyle.Bold),
-            ForeColor = Color.White,
-            AutoSize = false,
-            TextAlign = ContentAlignment.MiddleCenter,
-            BackColor = Color.Transparent,
-        };
+        _scoreLabel = MakeLabel("", 20f, Color.White, FontStyle.Bold);
         Controls.Add(_scoreLabel);
 
-        _newRecordLabel = new Label
-        {
-            Text = "★ ¡Nueva puntuación en el top 10! Ingresa tu nombre:",
-            Font = SpideyTheme.BodyFont(12f, FontStyle.Bold),
-            ForeColor = SpideyTheme.GoldAccent,
-            AutoSize = false,
-            TextAlign = ContentAlignment.MiddleCenter,
-            BackColor = Color.Transparent,
-        };
+        _newRecordLabel = MakeLabel("★ ¡Nueva puntuación en el top 10! Ingresa tu nombre:", 12f, SpideyTheme.GoldAccent, FontStyle.Bold);
         Controls.Add(_newRecordLabel);
 
         _nameBox = new TextBox
@@ -72,16 +57,8 @@ internal class GameOverScreen : ThemedScreenBase
         _saveButton.Click += (_, _) => SavePendingScore();
         Controls.Add(_saveButton);
 
-        _savedLabel = new Label
-        {
-            Text = "✔ ¡Guardado en el ranking!",
-            Font = SpideyTheme.BodyFont(11f, FontStyle.Italic),
-            ForeColor = SpideyTheme.GoldAccent,
-            AutoSize = false,
-            TextAlign = ContentAlignment.MiddleCenter,
-            BackColor = Color.Transparent,
-            Visible = false,
-        };
+        _savedLabel = MakeLabel("✔ ¡Guardado en el ranking!", 11f, SpideyTheme.GoldAccent, FontStyle.Italic);
+        _savedLabel.Visible = false;
         Controls.Add(_savedLabel);
 
         _retry = new SpideyButton
@@ -115,20 +92,14 @@ internal class GameOverScreen : ThemedScreenBase
         const int blockHeight = 514;
         int top = Math.Max(50, (Height - blockHeight) / 2);
 
-        _title.Size = new Size(Width, 60);
-        _title.Location = new Point(0, top);
-
-        _scoreLabel.Size = new Size(Width, 36);
-        _scoreLabel.Location = new Point(0, top + 90);
-
-        _newRecordLabel.Size = new Size(Width, 26);
-        _newRecordLabel.Location = new Point(0, top + 160);
+        CenterHorizontally(_title, top);
+        CenterHorizontally(_scoreLabel, top + 90);
+        CenterHorizontally(_newRecordLabel, top + 160);
 
         CenterHorizontally(_nameBox, top + 200);
         CenterHorizontally(_saveButton, top + 240);
 
-        _savedLabel.Size = new Size(Width, 24);
-        _savedLabel.Location = new Point(0, top + 292);
+        CenterHorizontally(_savedLabel, top + 292);
 
         CenterHorizontally(_retry, top + 410);
         CenterHorizontally(_menu, top + 470);
@@ -146,6 +117,7 @@ internal class GameOverScreen : ThemedScreenBase
         _nameBox.Visible = _qualifies;
         _saveButton.Visible = _qualifies;
         _savedLabel.Visible = false;
+        Reflow(); // el texto del puntaje cambió de ancho (AutoSize): hay que recentrar
 
         if (_qualifies)
         {

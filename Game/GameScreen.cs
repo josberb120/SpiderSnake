@@ -43,6 +43,7 @@ internal class GameScreen : UserControl
     private int _lastMilestoneReached;
     private string? _milestoneText;
     private double _milestoneAgeMs;
+    private Bitmap? _backdropCache;
 
     private class ScorePopup
     {
@@ -322,25 +323,51 @@ internal class GameScreen : UserControl
         return (cellSize, offsetX, offsetY);
     }
 
+    /// <summary>
+    /// Regenera el bitmap de fondo (degradado + telaraña + marco del tablero) sólo cuando el
+    /// tamaño del canvas cambió respecto a la última vez. Evita repintar gradientes y arcos en
+    /// cada tick del juego, lo cual es notablemente más pesado en gráficas integradas modestas
+    /// (p. ej. Intel HD Graphics) que un simple "blit" del bitmap ya calculado.
+    /// </summary>
+    private void EnsureBackdropCache()
+    {
+        var size = _canvas.ClientSize;
+        if (size.Width <= 0 || size.Height <= 0) return;
+        if (_backdropCache != null && _backdropCache.Size == size) return;
+
+        _backdropCache?.Dispose();
+        _backdropCache = new Bitmap(size.Width, size.Height);
+        using var bg = Graphics.FromImage(_backdropCache);
+        bg.SmoothingMode = SmoothingMode.AntiAlias;
+        SpideyTheme.PaintBackdrop(bg, new Rectangle(Point.Empty, size), SpideyTheme.SpideyBlue, SpideyTheme.SpideyBlueDark);
+
+        var (cellSize, offsetX, offsetY) = ComputeGridMetrics();
+        var frameRect = new Rectangle(offsetX - 10, offsetY - 10, GridWidth * cellSize + 20, GridHeight * cellSize + 20);
+        using var framePath = RoundedRect(frameRect, 16);
+        using var frameFill = new SolidBrush(Color.FromArgb(150, 10, 8, 12));
+        bg.FillPath(frameFill, framePath);
+        using var framePen = new Pen(SpideyTheme.GoldAccent, 2f);
+        bg.DrawPath(framePen, framePath);
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing) _backdropCache?.Dispose();
+        base.Dispose(disposing);
+    }
+
     private void PaintGame(Graphics g)
     {
         g.SmoothingMode = SmoothingMode.AntiAlias;
 
-        // Fondo temático (degradado + telaraña) que llena todo el canvas, incluso el
-        // espacio "muerto" alrededor del tablero en pantallas grandes/maximizadas.
-        SpideyTheme.PaintBackdrop(g, _canvas.ClientRectangle, SpideyTheme.SpideyBlue, SpideyTheme.SpideyBlueDark);
+        // El fondo (degradado + telaraña + marco) sólo cambia si se redimensiona la ventana,
+        // pero el tablero se invalida en cada tick del juego. Recalcular ese degradado a mano
+        // (con sus blends y arcos) en cada tick es caro para una GPU integrada modesta; lo
+        // cacheamos en un bitmap y aquí sólo se vuelca ("blit"), que es prácticamente gratis.
+        EnsureBackdropCache();
+        g.DrawImageUnscaled(_backdropCache!, 0, 0);
 
         var (cellSize, offsetX, offsetY) = ComputeGridMetrics();
-
-        // Marco tipo "tarjeta" de cómic alrededor del tablero jugable.
-        var frameRect = new Rectangle(offsetX - 10, offsetY - 10, GridWidth * cellSize + 20, GridHeight * cellSize + 20);
-        using (var framePath = RoundedRect(frameRect, 16))
-        {
-            using var frameFill = new SolidBrush(Color.FromArgb(150, 10, 8, 12));
-            g.FillPath(frameFill, framePath);
-            using var framePen = new Pen(SpideyTheme.GoldAccent, 2f);
-            g.DrawPath(framePen, framePath);
-        }
 
         using var gridPen = new Pen(Color.FromArgb(18, 255, 255, 255), 1f);
         for (int x = 0; x <= GridWidth; x++)

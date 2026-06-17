@@ -22,15 +22,7 @@ internal class MainMenuScreen : ThemedScreenBase
         AccentDark = SpideyTheme.SpideyBlueDark;
 
         _title = MakeTitle("SPIDER-SNAKE", 52f, Color.White);
-        _subtitle = new Label
-        {
-            Text = "¡A comer arañas por las calles de Nueva York!",
-            Font = SpideyTheme.BodyFont(12f, FontStyle.Italic),
-            ForeColor = SpideyTheme.GoldAccent,
-            AutoSize = false,
-            TextAlign = ContentAlignment.MiddleCenter,
-            BackColor = Color.Transparent,
-        };
+        _subtitle = MakeLabel("¡A comer arañas por las calles de Nueva York!", 12f, SpideyTheme.GoldAccent, FontStyle.Italic);
         Controls.Add(_title);
         Controls.Add(_subtitle);
 
@@ -40,15 +32,7 @@ internal class MainMenuScreen : ThemedScreenBase
         AddMenuButton("⚙  AJUSTES", SpideyTheme.SpideyBlue, SpideyTheme.SpideyBlueDark, () => SettingsClicked?.Invoke());
         AddMenuButton("✕  SALIR", Color.FromArgb(70, 70, 70), Color.FromArgb(25, 25, 25), () => ExitClicked?.Invoke());
 
-        _footer = new Label
-        {
-            Text = "Autor: Josber Betancourt",
-            Font = SpideyTheme.BodyFont(8f),
-            ForeColor = Color.FromArgb(140, 255, 255, 255),
-            AutoSize = false,
-            TextAlign = ContentAlignment.MiddleCenter,
-            BackColor = Color.Transparent,
-        };
+        _footer = MakeLabel("Autor: Josber Betancourt", 8f, Color.FromArgb(140, 255, 255, 255));
         Controls.Add(_footer);
 
         Reflow();
@@ -56,11 +40,8 @@ internal class MainMenuScreen : ThemedScreenBase
 
     protected override void Reflow()
     {
-        _title.Size = new Size(Width, 80);
-        _title.Location = new Point(0, Height / 2 - 235);
-
-        _subtitle.Size = new Size(Width, 28);
-        _subtitle.Location = new Point(0, Height / 2 - 142);
+        CenterHorizontally(_title, Height / 2 - 235);
+        CenterHorizontally(_subtitle, Height / 2 - 142);
 
         const int spacing = 62;
         int startY = Height / 2 - 95;
@@ -69,8 +50,7 @@ internal class MainMenuScreen : ThemedScreenBase
             CenterHorizontally(_buttons[i], startY + spacing * i);
         }
 
-        _footer.Size = new Size(Width, 20);
-        _footer.Location = new Point(0, Height - 28);
+        CenterHorizontally(_footer, Height - 28);
     }
 
     private void AddMenuButton(string text, Color accent, Color accentDark, Action onClick)
