@@ -10,7 +10,7 @@ internal static class AppLayout
     public const int CellSize = 20;
     public const int GridWidth = 38;
     public const int GridHeight = 28;
-    public const int TopBarHeight = 60;
+    public const int TopBarHeight = 72;
 
     public const int ScreenWidth = GridWidth * CellSize;                  // 760
     public const int ScreenHeight = GridHeight * CellSize + TopBarHeight; // 620

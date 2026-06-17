@@ -73,7 +73,7 @@ internal class GameScreen : UserControl
             Font = SpideyTheme.TitleFont(16f),
             ForeColor = Color.White,
             AutoSize = true,
-            Location = new Point(16, 14),
+            Location = new Point(16, 8),
             BackColor = Color.Transparent,
         };
         _bestLabel = new Label
@@ -82,9 +82,11 @@ internal class GameScreen : UserControl
             Font = SpideyTheme.BodyFont(11f, FontStyle.Bold),
             ForeColor = SpideyTheme.GoldAccent,
             AutoSize = true,
-            Location = new Point(20, 38),
             BackColor = Color.Transparent,
         };
+        // Bajo el puntaje, en vez de un offset fijo: así nunca se solapan ni se cortan
+        // si la fuente "Impact" se sustituye por otra con métricas distintas.
+        _bestLabel.Location = new Point(20, _scoreLabel.Bottom + 2);
         _streakLabel = new Label
         {
             Text = "",
@@ -110,8 +112,8 @@ internal class GameScreen : UserControl
         topBar.Controls.Add(_pauseButton);
         void ReflowTopBar()
         {
-            _pauseButton.Location = new Point(topBar.Width - _pauseButton.Width - 16, 11);
-            _streakLabel.Location = new Point((topBar.Width - _streakLabel.Width) / 2, 12);
+            _pauseButton.Location = new Point(topBar.Width - _pauseButton.Width - 16, (topBar.Height - _pauseButton.Height) / 2);
+            _streakLabel.Location = new Point((topBar.Width - _streakLabel.Width) / 2, (topBar.Height - _streakLabel.Height) / 2);
         }
         topBar.Resize += (_, _) => ReflowTopBar();
         ReflowTopBar();
@@ -235,7 +237,7 @@ internal class GameScreen : UserControl
 
         _streakLabel.Text = $"⚡ RACHA x{_engine.Streak}";
         var parent = _streakLabel.Parent!;
-        _streakLabel.Location = new Point((parent.Width - _streakLabel.Width) / 2, 12);
+        _streakLabel.Location = new Point((parent.Width - _streakLabel.Width) / 2, (parent.Height - _streakLabel.Height) / 2);
     }
 
     private void CheckMilestone()

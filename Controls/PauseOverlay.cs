@@ -26,8 +26,7 @@ internal class PauseOverlay : UserControl
             Text = "‖ EN PAUSA",
             Font = SpideyTheme.TitleFont(30f),
             ForeColor = SpideyTheme.GoldAccent,
-            AutoSize = false,
-            TextAlign = ContentAlignment.MiddleCenter,
+            AutoSize = true,
             BackColor = Color.Transparent,
         };
 
@@ -59,8 +58,7 @@ internal class PauseOverlay : UserControl
     private void LayoutControls()
     {
         int centerX = Width / 2;
-        _title.Size = new Size(Width, 60);
-        _title.Location = new Point(0, Height / 2 - 150);
+        _title.Location = new Point(centerX - _title.Width / 2, Height / 2 - 150);
 
         _resumeButton.Location = new Point(centerX - _resumeButton.Width / 2, Height / 2 - 60);
         _restartButton.Location = new Point(centerX - _restartButton.Width / 2, Height / 2);
